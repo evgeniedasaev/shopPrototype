@@ -4,6 +4,7 @@ block content
   include partials/header
   
   .container.theme-showcase(role='main')
-    .row
-      - for (var i = 1; i < 16; i++)
-        include partials/goods_preview
+      each chunk in product_chunks
+        .row
+          each product in chunk
+            include partials/goods_preview
