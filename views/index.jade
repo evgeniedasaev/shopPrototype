@@ -1,10 +1,7 @@
 extends layouts/default
 
-block content
-  include partials/header
-  
-  .container.theme-showcase(role='main')
-      each chunk in product_chunks
-        .row
-          each product in chunk
-            include partials/goods_preview
+block content  
+  each chunk in product_chunks
+    .row
+      each product in chunk
+        include partials/goods_preview
