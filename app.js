@@ -6,13 +6,14 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var session = require('express-session');
-var MongoStore = require('connect-mongo');
+var MongoStore = require('connect-mongo')(session);
 var passport = require('passport');
 var flash = require('connect-flash');
 var validator = require('express-validator');
 
 var routes = require('./routes/index');
 var userRoutes = require('./routes/user');
+var cartRoutes = require('./routes/cart');
 
 var app = express();
 
@@ -48,6 +49,7 @@ app.use(function(req, res, next){
   next();
 });
 
+app.use('/cart', cartRoutes);
 app.use('/user', userRoutes);
 app.use('/', routes);
 
