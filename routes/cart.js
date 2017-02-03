@@ -27,4 +27,13 @@ router.get('/add/:id', function(req, res, next) {
     });
 });
 
+router.get('/checkout', function(req, res, next) {
+    if (!req.session.cart) {
+        return res.render('cart/index', {products: null});
+    }
+
+    var cart = new Cart(req.session.cart);
+    res.render('cart/index', {products: cart.getItemList(), cart: cart})
+});
+
 module.exports = router;

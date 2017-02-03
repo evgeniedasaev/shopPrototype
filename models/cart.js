@@ -16,20 +16,24 @@ module.exports = function Cart(oldCart) {
         storedItem.qty += qty;
         storedItem.price = storedItem.item.price * storedItem.qty;
 
+        this.updateCart(); 
+    };
+
+    this.getItemList = function() {
+        var arr = [];
+        for (var id in this.items) {
+            arr.push(this.items[id]);
+        }
+        return arr;
+    };
+
+    this.updateCart = function() {
         this.totalQty = this.totalPrice = 0;
         for (var id in this.items) {
             var item = this.items[id];
 
             this.totalQty += item.qty;
             this.totalPrice += item.price;            
-        }        
-    };
-
-    this.generateArray = function() {
-        var arr = [];
-        for (var id in this.items) {
-            arr.push(this.items[id]);
         }
-        return arr;
     };
 }

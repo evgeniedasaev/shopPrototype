@@ -1,0 +1,32 @@
+extends ../layouts/default
+
+block content
+    if products
+        .row
+        .col-sm-6.col-md-6.col-md-offset-3.col-sm-offset-3
+            ul.list-group
+            each product in products
+                li.list-group-item
+                    span.badge #{product.qty}
+                    span(style='font-weight: bold') #{product.item.title}
+                    span.label.label-success #{product.price}
+                    .btn-group
+                    button.btn.btn-primary.btn-xs.dropdown-toggle(type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
+                        | Action 
+                        span.caret
+                    ul.dropdown-menu
+                        li
+                        a(href='#') Reduce by 1
+                        li
+                        a(href='#') Remove All
+        .row
+        .col-sm-6.col-md-4.col-md-offset-4.col-sm-offset-3
+            strong Total: #{cart.totalPrice}
+        hr
+        .row
+        .col-sm-6.col-md-4.col-md-offset-4.col-sm-offset-3
+            button.btn.btn-success(type='button') Checkout
+    else
+        .row
+        .col-sm-6.col-md-4.col-md-offset-4.col-sm-offset-3
+            h2 No Items in Cart yet!
