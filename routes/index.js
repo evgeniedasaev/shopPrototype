@@ -18,7 +18,7 @@ router.get('/', function(req, res, next) {
       chunks.push(list.slice(i, i + chunkSize));
     } 
 
-    res.render('index', { title: 'Магазин', product_chunks: chunks });
+    res.render('index', { product_chunks: chunks });
   }); 
 });
 

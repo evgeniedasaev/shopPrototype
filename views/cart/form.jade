@@ -1,0 +1,40 @@
+.row
+    .col-sm-12.col-md-12
+        h1 Оформить заказ
+        #charge-error.alert.alert-danger(class=typeof noError === "undefined" ? "hidden" : "")
+            | #{errMsg}
+        form#checkout-form(action='/checkout', method='post')
+        .row
+            .col-xs-12
+                .form-group
+                    label(for='name') ФИО
+                    input#name.form-control(type='text', required='', name='name')
+            .col-xs-12
+                .form-group
+                    label(for='address') Адрес
+                    input#address.form-control(type='text', required='', name='address')
+            hr
+            .col-xs-12
+                .form-group
+                    label(for='card-name') Имя держателя карты
+                    input#card-name.form-control(type='text', required='')
+            .col-xs-12
+                .form-group
+                    label(for='card-number') Номер карты
+                    input#card-number.form-control(type='text', required='')
+            .col-xs-12
+                label(for='card-expiry-month') Срок действия карты
+                .row
+                    .col-xs-6
+                        .form-group
+                            label(for='card-expiry-month') Месяц
+                            input#card-expiry-month.form-control(type='text', required='')
+                    .col-xs-6
+                        .form-group
+                            label(for='card-expiry-year') Год
+                            input#card-expiry-year.form-control(type='text', required='')
+            .col-xs-12
+                .form-group
+                    label(for='card-cvc') CVC
+                    input#card-cvc.form-control(type='text', required='')
+        button.btn.btn-success(type='submit') Оформить заказ

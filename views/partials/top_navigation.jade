@@ -1,23 +1,24 @@
 #navbar.navbar-collapse.collapse
-            ul.nav.navbar-nav
-                li.active
-                    a(href='/cart/checkout/') 
-                        | Корзина &nbsp;
-                        span.badge #{session.cart.totalQty}
-                li.dropdown
-                    a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', aria-expanded='false')
-                        | Управление пользователем 
-                        span.caret
-                    ul.dropdown-menu(role='menu')
-                        if login
-                            li
-                                a(href='/user/profile') Профиль
-                            li.divider
-                            li
-                                a(href='/user/logout') Выйти
-                        else
-                            li
-                                a(href='/user/signup') Регистрация
-                            li.divider
-                            li
-                                a(href='/user/signin') Войти          
+    ul.nav.navbar-nav
+        li.active
+            a(href='/cart/checkout/') 
+                | Корзина &nbsp;
+                if session.cart
+                    span.badge #{session.cart.totalQty}
+        li.dropdown
+            a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', aria-expanded='false')
+                | Управление пользователем 
+                span.caret
+            ul.dropdown-menu(role='menu')
+                if login
+                    li
+                        a(href='/user/profile') Профиль
+                    li.divider
+                    li
+                        a(href='/user/logout') Выйти
+                else
+                    li
+                        a(href='/user/signup') Регистрация
+                    li.divider
+                    li
+                        a(href='/user/signin') Войти          
