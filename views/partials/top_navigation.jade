@@ -1,10 +1,5 @@
-#navbar.navbar-collapse.collapse
-    ul.nav.navbar-nav
-        li.active
-            a(href='/cart/checkout/') 
-                | Корзина &nbsp;
-                if session.cart
-                    span.badge #{session.cart.totalQty}
+#navbar.navbar-collapse.collapse.clearfix
+    ul.nav.navbar-nav.pull-right
         li.dropdown
             a.dropdown-toggle(href='#', data-toggle='dropdown', role='button', aria-expanded='false')
                 | Управление пользователем 
@@ -21,4 +16,9 @@
                         a(href='/user/signup') Регистрация
                     li.divider
                     li
-                        a(href='/user/signin') Войти          
+                        a(href='/user/signin') Войти
+        li.active
+            a(href='/cart/checkout/') 
+                | Корзина &nbsp;
+                if session.cart
+                    span.badge #{session.cart.totalQty}

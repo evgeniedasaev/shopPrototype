@@ -8,6 +8,7 @@ router.use(csrfProtection);
 
 var Product = require('../models/product');
 var Cart = require('../models/cart');
+var Order = require('../models/order');
 
 /* GET home page. */
 router.get('/add/:id', function(req, res, next) {
@@ -96,10 +97,19 @@ router.post('/checkout', function(req, res, next) {
             currency: "usd",
             source: response.id,
             description: "Test Charge"
-        }).then(function(response) {
-            req.flash('success', 'Ваш заказ успешно оформлен!');
-            req.session.cart = {};
-            res.redirect('/');
+        }).then(function(charge) {
+            var order = new Order({
+                user: req.user,
+                cart: cart,
+                address: req.body.address,
+                name: req.body.name,
+                paymentId: charge.id
+            });
+            order.save(function(err, result) {
+                req.flash('success', 'Ваш заказ успешно оформлен!');
+                req.session.cart = {};
+                res.redirect('/');
+            });
         }).catch(handleStripeError);
     }).catch(handleStripeError);
 });
