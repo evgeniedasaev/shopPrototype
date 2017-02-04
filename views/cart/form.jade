@@ -3,39 +3,40 @@
         h1 Оформить заказ
         #charge-error.alert.alert-danger(class=typeof noError === "undefined" ? "hidden" : "")
             | #{errMsg}
-        form#checkout-form(action='/checkout', method='post')
+        form#checkout-form(action='/cart/checkout/', method='post')
+            input(type="hidden", name="_csrf", value=csrfToken)
             .row
                 .col-xs-12
                     .form-group
                         label(for='name') ФИО
-                        input#name.form-control(type='text', required='', name='name')
+                        input#name.form-control(type='text', required='', name='name', value="#{formData.name || ''}")
                 .col-xs-12
                     .form-group
                         label(for='address') Адрес
-                        input#address.form-control(type='text', required='', name='address')
+                        input#address.form-control(type='text', required='', name='address', value="#{formData.address || ''}")
                 hr
                 .col-xs-12
                     .form-group
                         label(for='card-name') Имя держателя карты
-                        input#card-name.form-control(type='text', required='')
+                        input#card-name.form-control(type='text', name='card[name]', required='', value=((formData && 'card' in formData && 'name' in formData.card) ? formData.card.name : ""))
                 .col-xs-12
                     .form-group
                         label(for='card-number') Номер карты
-                        input#card-number.form-control(type='text', required='')
+                        input#card-number.form-control(type='text', name='card[number]', required='', value=((formData && 'card' in formData && 'number' in formData.card) ? formData.card.number : ""))
                 .col-xs-12
                     label(for='card-expiry-month') Срок действия карты
                     .row
                         .col-xs-6
                             .form-group
                                 label(for='card-expiry-month') Месяц
-                                input#card-expiry-month.form-control(type='text', required='')
+                                input#card-expiry-month.form-control(type='text', name='card[expire][month]', required='', value=((formData && 'card' in formData && 'expire' in formData.card && 'month' in formData.card.expire) ? formData.card.expire.month : ""))
                         .col-xs-6
                             .form-group
                                 label(for='card-expiry-year') Год
-                                input#card-expiry-year.form-control(type='text', required='')
+                                input#card-expiry-year.form-control(type='text', name='card[expire][year]', required='', value=((formData && 'card' in formData && 'expire' in formData.card && 'year' in formData.card.expire) ? formData.card.expire.year : ""))
                 .col-xs-12
                     .form-group
                         label(for='card-cvc') CVC
-                        input#card-cvc.form-control(type='text', required='')
+                        input#card-cvc.form-control(type='text', name='card[cvc]', required='', value=((formData && 'card' in formData && 'cvc' in formData.card) ? formData.card.cvc : ""))
             div.text-right
                 button.btn.btn-success(type='submit') Оформить заказ

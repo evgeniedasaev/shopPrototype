@@ -28,7 +28,7 @@ app.set('view engine', 'jade');
 //app.use(favicon(path.join(__dirname, 'public', 'favicon.ico')));
 app.use(logger('dev'));
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(validator());
 app.use(cookieParser());
 app.use(session({
@@ -36,7 +36,7 @@ app.use(session({
   resave: false, 
   saveUninitialized: false,
   store: new MongoStore({ mongooseConnection: mongoose.connection }),
-  cookie: { maxAge: 180 * 60 * 1000 }
+  cookie: { maxAge: 12 * 32 * 24 * 60 * 60 * 1000 }
 }));
 app.use(flash());
 app.use(passport.initialize());
