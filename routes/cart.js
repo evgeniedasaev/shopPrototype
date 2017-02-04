@@ -28,7 +28,7 @@ router.get('/add/:id', function(req, res, next) {
     });
 });
 
-router.get('/checkout', function(req, res, next) {
+router.get('/checkout', isLoggedIn, function(req, res, next) {
     if (!req.session.cart) {
         return res.render('cart/index', {products: null});
     }
@@ -37,7 +37,7 @@ router.get('/checkout', function(req, res, next) {
     res.render('cart/index', {csrfToken: req.csrfToken(), products: cart.getItemList(), cart: cart, formData: req.body});
 });
 
-router.post('/checkout', function(req, res, next) {
+router.post('/checkout', isLoggedIn, function(req, res, next) {
     var cart = new Cart(req.session.cart);
 
     var responseInfo = {
@@ -115,3 +115,11 @@ router.post('/checkout', function(req, res, next) {
 });
 
 module.exports = router;
+
+function isLoggedIn(req, res, next) {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    req.session.oldUrl = req.url;
+    res.redirect('/user/signin/');
+}
