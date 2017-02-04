@@ -2,27 +2,26 @@
     .col-sm-12.col-md-12
         table.table
             th.text-left Название
+            th.text-center(style='width: 10%') 
             th.text-center(style='width: 10%') Цена
             th.text-center(style='width: 10%') Количество
-            th.text-center(style='width: 10%') Действие
-
             each product in products
                 tr                        
                     td.text-left(style='font-weight: bold') #{product.item.title}
                     td.text-center
-                        span.label.label-success #{product.price} $
-                    td.text-center
-                        span.badge #{product.qty}
-                    td.text-center
                         .btn-group
                             button.btn.btn-primary.btn-xs.dropdown-toggle(type='button', data-toggle='dropdown', aria-haspopup='true', aria-expanded='false')
-                                | Action 
+                                | Действия 
                                 span.caret
                             ul.dropdown-menu
                                 li
-                                a(href='#') Reduce by 1
+                                a(href='#') Уменьшить на 1
                                 li
-                                a(href='#') Remove All
-            tr
+                                a(href='#') Удалить
+                    td.text-center
+                        span.label.label-success #{product.price} $
+                    td.text-center
+                        span.badge #{product.qty}
+             tr
                 td.text-right(colspan="4")
-                    strong Total: #{cart.totalPrice} $  
+                    strong Итого: #{cart.totalPrice} $  
