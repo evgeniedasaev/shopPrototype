@@ -10,6 +10,8 @@ var Product = require('../models/product');
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
+  var successMsg = req.flash('success')[0];
+
   Product.find(function(err, list) {
     var chunks = [];
     var chunkSize = 3;
@@ -18,7 +20,7 @@ router.get('/', function(req, res, next) {
       chunks.push(list.slice(i, i + chunkSize));
     } 
 
-    res.render('index', { product_chunks: chunks });
+    res.render('index', { product_chunks: chunks, noMessage: !successMsg, successMsg: successMsg });
   }); 
 });
 

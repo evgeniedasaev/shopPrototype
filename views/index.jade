@@ -2,6 +2,10 @@ extends layouts/default
 
 block content
   h1 Каталог
+  .row
+    .col-sm-6.col-md-6
+      #success.alert.alert-success(class=(noMessage ? "hidden" : ""))
+        | #{successMsg}
   each chunk in product_chunks
     .row
       each product in chunk

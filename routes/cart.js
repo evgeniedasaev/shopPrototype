@@ -77,7 +77,7 @@ router.post('/checkout', function(req, res, next) {
                 responseInfo.errMsg = "Handle any other types of unexpected errors";
                 break;
         }
-
+        console.log(err);
         res.render('cart/index', responseInfo);
     }
 
@@ -94,10 +94,12 @@ router.post('/checkout', function(req, res, next) {
         stripe.charges.create({
             amount: cart.totalPrice * 100,
             currency: "usd",
-            source: response.id, // obtained with Stripe.js
+            source: response.id,
             description: "Test Charge"
         }).then(function(response) {
-
+            req.flash('success', 'Ваш заказ успешно оформлен!');
+            req.session.cart = {};
+            res.redirect('/');
         }).catch(handleStripeError);
     }).catch(handleStripeError);
 });
