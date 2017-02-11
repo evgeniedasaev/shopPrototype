@@ -12,7 +12,7 @@ var Product = require('../models/product');
 router.get('/', function(req, res, next) {
   var successMsg = req.flash('success')[0];
 
-  Product.find(function(err, list) {
+  Product.find().limit(25).exec(function(err, list) {
     var chunks = [];
     var chunkSize = 3;
 

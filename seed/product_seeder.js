@@ -3,8 +3,7 @@ require('./seeder')(
      FROM goods
      JOIN goods_variants ON goods_variants.good_id = goods.id
      WHERE goods.is_published = 1
-     GROUP BY goods.id
-     LIMIT 100;`, 
+     GROUP BY goods.id;`, 
     function(exportItem, success) {
         var Product = require('../models/product');
 
