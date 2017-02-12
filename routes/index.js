@@ -35,7 +35,8 @@ router.get('/', function(req, res, next) {
       });
 
       res.render('index', {
-        catalog_active: {name: "Каталог", code: null}, 
+        catalog_active: {name: "Каталог", code: null, childs: []},
+        withProducts: true,
         product_chunks: chunks, 
         noMessage: !successMsg, 
         successMsg: successMsg, 
@@ -48,7 +49,7 @@ router.get('/', function(req, res, next) {
 router.get(/^\/catalog\/.*?$/, function(req, res, next) {
   var successMsg = req.flash('success')[0];
 
-  Catalog.findOne({full_path: req.originalUrl}, function(error, catalog) {
+  Catalog.findOne({full_path: req.originalUrl}).populate('childs').exec(function(error, catalog) {
     if (catalog) {
       Product.find({catalog: catalog._id}).limit(25).exec(function(err, list) {
         var chunks = [];
@@ -70,9 +71,10 @@ router.get(/^\/catalog\/.*?$/, function(req, res, next) {
           var roots = catalogs.filter(function(catalog) {
             return catalog.parentId === null;
           });
-  
+
           res.render('index', {
-            catalog_active: catalog, 
+            catalog_active: catalog,
+            withProducts: list.length,
             product_chunks: chunks, 
             noMessage: !successMsg, 
             successMsg: successMsg, 

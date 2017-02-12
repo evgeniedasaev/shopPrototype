@@ -9,8 +9,15 @@ block content
       .row
         .col-sm-6.col-md-6
           #success.alert.alert-success(class=(noMessage ? "hidden" : ""))
-            | #{successMsg}    
-      each chunk in product_chunks
-        .row
-          each product in chunk
-            include partials/goods_preview
+            | #{successMsg}
+
+      if withProducts  
+        each chunk in product_chunks
+          .row
+            each product in chunk
+              include partials/goods_preview
+      else
+        - for (var i = 0; i < catalog_active.childs.length; i+=3)
+          .row
+            each catalog in catalog_active.childs.slice(i, i + 3)
+              include partials/catalog_preview
