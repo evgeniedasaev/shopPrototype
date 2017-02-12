@@ -35,7 +35,7 @@ router.get('/', function(req, res, next) {
       });
 
       res.render('index', {
-        catalog_active: {name: null, code: null}, 
+        catalog_active: {name: "Каталог", code: null}, 
         product_chunks: chunks, 
         noMessage: !successMsg, 
         successMsg: successMsg, 
