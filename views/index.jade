@@ -5,11 +5,7 @@ block content
     .col-sm-12.col-md-4
       include partials/navigation
     .col-sm-12.col-md-8
-      h1
-        if catalog_active
-          | #{catalog_active.name}
-        else
-          | Каталог
+      h1 #{catalog_active.name}
       .row
         .col-sm-6.col-md-6
           #success.alert.alert-success(class=(noMessage ? "hidden" : ""))
