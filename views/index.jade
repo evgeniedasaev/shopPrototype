@@ -1,12 +1,20 @@
 extends layouts/default
 
 block content
-  h1 Каталог
   .row
-    .col-sm-6.col-md-6
-      #success.alert.alert-success(class=(noMessage ? "hidden" : ""))
-        | #{successMsg}
-  each chunk in product_chunks
-    .row
-      each product in chunk
-        include partials/goods_preview
+    .col-sm-12.col-md-4
+      include partials/navigation
+    .col-sm-12.col-md-8
+      h1
+        if catalog_active
+          | #{catalog_active.name}
+        else
+          | Каталог
+      .row
+        .col-sm-6.col-md-6
+          #success.alert.alert-success(class=(noMessage ? "hidden" : ""))
+            | #{successMsg}    
+      each chunk in product_chunks
+        .row
+          each product in chunk
+            include partials/goods_preview

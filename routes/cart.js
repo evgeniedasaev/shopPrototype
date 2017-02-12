@@ -23,7 +23,7 @@ router.get('/add/:id', function(req, res, next) {
         cart.add(product, 1);
 
         req.session.cart = cart;
-        console.log(req.session.cart);
+
         res.redirect('/');
     });
 });

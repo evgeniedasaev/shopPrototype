@@ -3,7 +3,7 @@
     img.image-responsive(src=product.imagePath, alt=product.title)
     .caption
       h3 #{product.title}
-      p !{product.description}
+      //- p !{product.description}
       div.clearfix
         div.price.pull-left $#{product.price}
         a.btn.btn-success.pull-right(href='/cart/add/#{product._id}', role='button') В корзину

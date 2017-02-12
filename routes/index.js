@@ -6,6 +6,7 @@ var passport = require('passport');
 var csrfProtection = csrf();
 router.use(csrfProtection);
 
+var Catalog = require('../models/catalog');
 var Product = require('../models/product');
 
 /* GET home page. */
@@ -20,7 +21,66 @@ router.get('/', function(req, res, next) {
       chunks.push(list.slice(i, i + chunkSize));
     } 
 
-    res.render('index', { product_chunks: chunks, noMessage: !successMsg, successMsg: successMsg });
+    Catalog.find().populate({
+      path: 'childs',
+      populate: {
+        path: 'childs',
+        populate: {
+          path: 'childs'
+        }
+      }
+    }).exec(function (err, catalogs) {
+      var roots = catalogs.filter(function(catalog) {
+        return catalog.parentId === null;
+      });
+
+      res.render('index', {
+        catalog_active: {name: null, code: null}, 
+        product_chunks: chunks, 
+        noMessage: !successMsg, 
+        successMsg: successMsg, 
+        roots: roots
+      });
+    });
+  }); 
+});
+
+router.get(/^\/catalog\/.*?$/, function(req, res, next) {
+  var successMsg = req.flash('success')[0];
+
+  Catalog.findOne({full_path: req.originalUrl}, function(error, catalog) {
+    if (catalog) {
+      Product.find({catalog: catalog._id}).limit(25).exec(function(err, list) {
+        var chunks = [];
+        var chunkSize = 3;
+
+        for (var i = 0; i < list.length; i+=chunkSize) {
+          chunks.push(list.slice(i, i + chunkSize));
+        } 
+
+        Catalog.find().populate({
+          path: 'childs',
+          populate: {
+            path: 'childs',
+            populate: {
+              path: 'childs'
+            }
+          }
+        }).exec(function (err, catalogs) {
+          var roots = catalogs.filter(function(catalog) {
+            return catalog.parentId === null;
+          });
+  
+          res.render('index', {
+            catalog_active: catalog, 
+            product_chunks: chunks, 
+            noMessage: !successMsg, 
+            successMsg: successMsg, 
+            roots: roots
+          });
+        });
+      });
+    }
   }); 
 });
 

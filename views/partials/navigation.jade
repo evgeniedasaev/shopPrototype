@@ -1,0 +1,11 @@
+mixin buildNavigation(navigation, nesting, catalog_active)
+    each catalog in navigation        
+        li.list-group-item(class=((catalog_active.code === catalog.code) ? "active" : ""))
+            - for (var x = 1; x <= nesting; x++)
+                | &nbsp;&nbsp;&nbsp;
+            a(href=catalog.full_path) #{catalog.name}
+        if catalog.childs
+            +buildNavigation(catalog.childs, nesting + 1, catalog_active)
+
+ul.list-group.table-of-contents
+    +buildNavigation(roots, 0, catalog_active)

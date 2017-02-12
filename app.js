@@ -47,7 +47,6 @@ app.use(function(req, res, next){
   res.locals.login = req.isAuthenticated();
   res.locals.session = req.session;
   res.locals.title = 'Магазин';
-  console.log(req.session.cart);
   next();
 });
 
