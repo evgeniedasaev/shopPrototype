@@ -24,7 +24,7 @@ router.get('/add/:id', function(req, res, next) {
 
         req.session.cart = cart;
 
-        res.redirect('/');
+        res.redirect('back');
     });
 });
 
