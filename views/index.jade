@@ -16,8 +16,10 @@ block content
           .row
             each product in chunk
               include partials/goods_preview
-      else
+      else if catalog_active.childs.length
         - for (var i = 0; i < catalog_active.childs.length; i+=3)
           .row
             each catalog in catalog_active.childs.slice(i, i + 3)
               include partials/catalog_preview
+      else
+        p Товаров нет.
