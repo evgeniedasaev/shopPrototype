@@ -15,7 +15,7 @@ var pool = mysql.createPool({
     database : 'interalliance_beta',
 });
 
-var promises = [], amount = 10000000, chunkSize = 100;
+var promises = [], amount = 92800, chunkSize = 1000;
 for (var i = 0; i < Math.ceil(amount/chunkSize); i++) {  
         var handleChunck = pool.query(
             `SELECT  
@@ -109,7 +109,8 @@ for (var i = 0; i < Math.ceil(amount/chunkSize); i++) {
             }
  
             return Promise.reduce(binds, function(propertiesInserted, bind) {
-                return bind.product.addPropertyValue(bind.property, bind.value).then(function() {
+                return bind.product.addPropertyValue(bind.property, bind.value).
+                then(function() {
                     return propertiesInserted++;
                 }).
                 catch(function(error){
