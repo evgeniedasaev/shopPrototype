@@ -3,8 +3,8 @@ var findOrCreate = require('mongoose-findorcreate');
 var Schema = mongoose.Schema;
 
 var schema = new Schema({
+    _export_id: {type: Number, index: true},
     property: {type: Schema.Types.ObjectId, ref: 'Property'},
-    _export_id: {type: Number},
     name: {type: String, required: true},
     code: {type: String, required: true}
 });

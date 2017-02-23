@@ -58,7 +58,6 @@ router.get(/^\/catalog\/.*?$/, function(req, res, next) {
   
   // подбираем товары для данного раздела  
   .then(function(catalog) {
-    console.log(catalog);
     if (catalog) {
       // передаем информацию о текущем разделе каталога
       locals.catalog_active = catalog;
@@ -71,7 +70,6 @@ router.get(/^\/catalog\/.*?$/, function(req, res, next) {
 
   // организуем вывод товаров по три в ряд
   .then(function(list) {
-        console.log(list);
         var chunks = [];
         var chunkSize = 3;
 
@@ -87,7 +85,6 @@ router.get(/^\/catalog\/.*?$/, function(req, res, next) {
 
   // формируем навигацию по каталогу
   .then(function() {
-    console.log('navigation')
     return Catalog.find().populate({
       path: 'childs',
       populate: {
@@ -101,7 +98,6 @@ router.get(/^\/catalog\/.*?$/, function(req, res, next) {
 
   // получаем корневые разделы
   .then(function (catalogs) {
-    console.log(catalogs);
     locals.roots = catalogs.filter(function(catalog) {
       return catalog.parentId === null;
     })
@@ -109,7 +105,6 @@ router.get(/^\/catalog\/.*?$/, function(req, res, next) {
 
   // отрисовываем шаблон
   .then(function() {
-    console.log(locals);
     return res.render('index', locals);
   })
 
