@@ -4,27 +4,29 @@ var Property = require('../models/property');
 var PropertyValue = require('../models/property_value');
 var Schema = mongoose.Schema;
 
-var filterSchema = new Schema({
-    property: {type: Schema.Types.ObjectId, ref: 'Property'},
-    values: [{
-        value: {type: Schema.Types.ObjectId, ref: 'PropertyValue'},
-        amount: {type: Number, default: 0},
-        availables: [{type: Schema.Types.ObjectId, ref: 'PropertyValue'}]  
-    }]
-});
-
 var catalogSchema = new Schema({
     _export_id: {type: Number, defult: 0},
     childs: [{type: Schema.Types.ObjectId, ref: 'Catalog'},],
     name: {type: String, required: true},
     code: {type: String, required: true},
     full_path: {type: String},
-    filter: [filterSchema]
+    filter: [{
+        property: {type: Schema.Types.ObjectId, ref: 'Property'},
+        value: {type: Schema.Types.ObjectId, ref: 'PropertyValue'},
+        index: {type: String, required: true},
+        amount: {type: Number, default: 0},
+        availables: [{type: Schema.Types.ObjectId, ref: 'PropertyValue'}]  
+    }]
 });
 catalogSchema.plugin(materializedPlugin);
 
 catalogSchema.methods.buildFilter = function(product) {
-    var propertyIds = valueIds = valueIndexes = [];    
+    var Product, Catalog, catalog;
+    catalog = this;
+    Catalog = catalog.model('Catalog');
+    Product = product.model('Product');
+
+    var propertyIds = [], valueIds = [], valueIndexes = [];    
     product.properties.forEach(function(property) {
         propertyIds.push(property.property);
 
@@ -34,11 +36,6 @@ catalogSchema.methods.buildFilter = function(product) {
         });
     });
 
-    var prepare_data = [
-        Property.find({_id: {$in: propertyIds}}).exec(),
-        PropertyValue.find({_id: {$in: valueIds}}).exec()
-    ];
-
     return Promise.all([
         Property.find({_id: {$in: propertyIds}}).exec(),
         PropertyValue.find({_id: {$in: valueIds}}).exec()
@@ -46,8 +43,9 @@ catalogSchema.methods.buildFilter = function(product) {
     then(function(results) {
         var properties, values, filterUpdates = [];
         properties = results[0];
-        values = results[1].reduce(function ( total, current ) {
-            if (!current.property in total)
+        values = results[1];
+        values_by_properties = values.reduce(function ( total, current ) {
+            if (typeof total[ current.property ] === 'undefined')
                 total[ current.property ] = [];
 
             total[ current.property ].push(current);
@@ -55,33 +53,54 @@ catalogSchema.methods.buildFilter = function(product) {
             return total;
         }, {});
 
-        var Product, Catalog, catalog;
-        catalog = this;
-        Catalog = catalog.model('Catalog');
-        Product = product.model('Product');
-
         properties.forEach(function(property) {
-            if (property._id in values) {
-                values[property._id].forEach(function(value) {
+            if (property._id in values_by_properties) {
+                values_by_properties[property._id].forEach(function(value) {
                     var value_index, availables;
 
                     value_index = property.code + '#' + value.code;
-                    availables = values[property._id].filter(function(available_value) {
+                    availables = values.filter(function(available_value) {
                         return value._id != available_value._id;
                     });
 
                     filterUpdates.push(
-                        Product.count({'properties.values.value_index': value_index}).exec().
+                        Product.count({'properties.values.index': value_index}).exec().
                         then(function(amount) {
-                            return Catalog.update(
-                                {_id: product._id, 'filter.values.value': value}, 
-                                { $push: { 'filter.$.values.$': {
-                                    value: value,
-                                    amount: amount,
-                                    availables: availables
-                                } } }, 
-                                { upsert : true }
-                            );
+                            return Catalog.findOne(
+                                {_id: catalog._id, 'filter.index': value_index}, 
+                                {'filter.$': 1}
+                            ).exec().
+                            then(function(catalogExist){
+                                if (catalogExist !== null) {
+                                    return Catalog.update(
+                                        { _id: catalog._id, 'filter.index': value_index },
+                                        { 
+                                            $set: { 'filter.$.amount': amount },
+                                            $addToSet: {'filter.$.availables': availables}
+                                        }
+                                    );        
+                                } else {
+                                    console.log(catalog.filter, {
+                                            property: property._id,
+                                            value: value._id,
+                                            index: value_index,
+                                            amount: amount,
+                                            availables: availables
+                                    });
+                                    return Catalog.update(
+                                        { _id: catalog._id },
+                                        { 
+                                            $push: {'filter': {
+                                                    property: property._id,
+                                                    value: value._id,
+                                                    index: value_index,
+                                                    amount: amount,
+                                                    availables: availables
+                                            } }
+                                        }
+                                    );                                    
+                                }
+                            });
                         }).
                         catch(function(error){
                             console.log(error);
