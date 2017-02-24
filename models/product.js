@@ -9,7 +9,7 @@ var propertiesSchema = new Schema({
     }]
 });
 
-var userSchema = new Schema({
+var productSchema = new Schema({
     _export_id: {type: Number, index: true},
     catalog: {type: Schema.Types.ObjectId, ref: 'Catalog'},   
     imagePath: {type: String, required: true},
@@ -19,7 +19,7 @@ var userSchema = new Schema({
     properties: [propertiesSchema]
 });
 
-userSchema.methods.addPropertyValue = function(property, value) {
+productSchema.methods.addPropertyValue = function(property, value) {
     var product, productModel, value_index;
     
     product = this;
@@ -68,4 +68,4 @@ userSchema.methods.addPropertyValue = function(property, value) {
     });
 };
 
-module.exports = mongoose.model('Product', userSchema);
+module.exports = mongoose.model('Product', productSchema);
