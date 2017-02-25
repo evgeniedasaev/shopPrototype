@@ -10,7 +10,8 @@ var Catalog = require('../models/catalog');
 Product.find({}).populate('catalog').exec().
 then(function(products) {
     return Promise.reduce(products, function(updated, product) {
-        if (product.catalog === null) {
+        if (typeof product.catalog === "undefined") {
+            console.log('No catalog for ' + product._id)
             return Promise.resolve("No catalog");
         }
 
@@ -22,11 +23,14 @@ then(function(products) {
             console.log(error);
         });
     }, 0);
-}).then(function(){
+}).
+then(function(){
     console.log('finished');
     mongoose.disconnect();
     process.exit();  
 }).
 catch(function(error){
     console.log(error);
+    mongoose.disconnect();
+    process.exit();    
 });

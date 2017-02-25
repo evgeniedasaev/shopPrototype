@@ -8,33 +8,28 @@ require('./seeder')(
         var Product = require('../models/product');
         var Catalog = require('../models/catalog');
 
-        Product.findOneAndUpdate({_export_id: exportItem.id}, {
+        var promises = [];
+        
+        promises.push(Product.findOneAndUpdate({_export_id: exportItem.id}, {
             _export_id: exportItem.id,
             imagePath: "https://www.qpstol.ru/global_images/goods/" + exportItem.image150,
             title: exportItem.name,
             description: exportItem.description,
             price: exportItem.price
-        }, { upsert: true, new: true, setDefaultsOnInsert: true }, function(err, product) {
-            if (err) {
-                console.log(err);
-            }
+        }, { upsert: true, new: true, setDefaultsOnInsert: true }).exec());
 
-            Catalog.findOne({_export_id: exportItem.type_id}, function(err, catalog) {
-                if (err) {
-                    console.log(err);
-                }
+        promises.push(Catalog.findOne({_export_id: exportItem.type_id}).exec());
 
-                if (catalog) {
-                    product.catalog = catalog._id;
-                }                
+        return Promise.all(promises).
+        then(function(results) {
+            var product = results[0];
+            var catalog = results[1];
 
-                product.save(function(error) {
-                    if (error) {
-                        console.log(error);
-                        return;
-                    }
-                }); 
-            });
+            if (catalog) {
+                product.catalog = catalog._id;
+            }                
+
+            return product.save();            
         });
     }
 );

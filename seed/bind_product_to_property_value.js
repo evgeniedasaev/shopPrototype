@@ -123,7 +123,6 @@ for (var i = 0; i < Math.ceil(amount/chunkSize); i++) {
         });
 
         promises.push(handleChunck);
-        console.log(i, promises.length);
 }
 
 Promise.all(promises).then(function(){

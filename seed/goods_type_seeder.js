@@ -1,47 +1,37 @@
 require('./seeder')(
-    `SELECT     id, 
-                parent_id,
-                name,
-                permalink
+    `SELECT     goods_types.id, 
+                goods_types.parent_id,
+                goods_types.name,
+                goods_types.permalink
     FROM        goods_types
-    ORDER BY    nesting DESC, parent_id DESC;`, 
+    GROUP BY 	goods_types.id
+    ORDER BY    parent_id ASC;`, 
     function(exportItem, success) {
         var Catalog = require('../models/catalog');
 
-        Catalog.findOneAndUpdate({_export_id: exportItem.id}, {
-                _export_id: exportItem.id,
-                name: exportItem.name,
-                code: exportItem.permalink
-        }, { upsert: true, new: true, setDefaultsOnInsert: true }, function(error, catalog) {
-            if (error) {
-                console.log(error);
-                return;
+        return Promise.all([
+            Catalog.findOneAndUpdate({_export_id: exportItem.id}, {
+                    _export_id: exportItem.id,
+                    name: exportItem.name,
+                    code: exportItem.permalink
+            }, { upsert: true, new: true, setDefaultsOnInsert: true }).exec(),
+            Catalog.findOne({_export_id: exportItem.parent_id}).exec()
+        ]).
+        then(function(results) {
+            var saves = [], catalog = results[0], parent = results[1];
+
+            if (parent) {
+                catalog.parentId = parent._id;
+
+                saves.push(Catalog.update(
+                    { _id: parent._id }, 
+                    { $addToSet: { childs: catalog } }
+                ));
             }
+            
+            saves.push(catalog.save());
 
-            catalog.save(function(error) {
-                if (error) {
-                    console.log(error);
-                    return;
-                }
-
-                if (exportItem.parent_id) {
-                    Catalog.findOne({_export_id: exportItem.parent_id}, function(error, parent) {
-                        if (error) {
-                            console.log(err);
-                            return;
-                        }
-
-                        if (parent) {
-                            parent.appendChild(catalog, function(err, catalog){
-                                Catalog.update(
-                                    { _id: parent._id }, 
-                                    { $addToSet: { childs: catalog } }
-                                );
-                            });
-                        }
-                    });                
-                }               
-            });
-        });
+            return Promise.all(saves);
+        });     
     }
 );

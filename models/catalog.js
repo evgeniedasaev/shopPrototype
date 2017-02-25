@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var materializedPlugin = require('mongoose-materialized');
+var Product = require('../models/product');
 var Property = require('../models/property');
 var PropertyValue = require('../models/property_value');
 var Schema = mongoose.Schema;
@@ -21,18 +22,15 @@ var catalogSchema = new Schema({
 catalogSchema.plugin(materializedPlugin);
 
 catalogSchema.methods.buildFilter = function(product) {
-    var Product, Catalog, catalog;
-    catalog = this;
-    Catalog = catalog.model('Catalog');
-    Product = product.model('Product');
+    var catalog = this;
+    var Catalog = catalog.model('Catalog');
 
-    var propertyIds = [], valueIds = [], valueIndexes = [];    
+    var propertyIds = [], valueIds = [];    
     product.properties.forEach(function(property) {
         propertyIds.push(property.property);
 
         property.values.forEach(function(value) {
             valueIds.push(value.value);
-            valueIndexes.push(value.index);
         });
     });
 
@@ -41,10 +39,11 @@ catalogSchema.methods.buildFilter = function(product) {
         PropertyValue.find({_id: {$in: valueIds}}).exec()
     ]).
     then(function(results) {
-        var properties, values, filterUpdates = [];
-        properties = results[0];
-        values = results[1];
-        values_by_properties = values.reduce(function ( total, current ) {
+        var filterUpdates = [];
+
+        var properties = results[0];
+        var values = results[1];
+        var values_by_properties = values.reduce(function ( total, current ) {
             if (typeof total[ current.property ] === 'undefined')
                 total[ current.property ] = [];
 
@@ -56,61 +55,64 @@ catalogSchema.methods.buildFilter = function(product) {
         properties.forEach(function(property) {
             if (property._id in values_by_properties) {
                 values_by_properties[property._id].forEach(function(value) {
-                    var value_index, availables;
-
-                    value_index = property.code + '#' + value.code;
-                    availables = values.filter(function(available_value) {
+                    var value_index = property.code + '#' + value.code;
+                    var availables = values.filter(function(available_value) {
                         return value._id != available_value._id;
                     });
 
-                    filterUpdates.push(
-                        Product.count({'properties.values.index': value_index}).exec().
-                        then(function(amount) {
-                            return Catalog.findOne(
-                                {_id: catalog._id, 'filter.index': value_index}, 
-                                {'filter.$': 1}
-                            ).exec().
-                            then(function(catalogExist){
-                                if (catalogExist !== null) {
-                                    return Catalog.update(
-                                        { _id: catalog._id, 'filter.index': value_index },
-                                        { 
-                                            $set: { 'filter.$.amount': amount },
-                                            $addToSet: {'filter.$.availables': availables}
-                                        }
-                                    );        
-                                } else {
-                                    console.log(catalog.filter, {
-                                            property: property._id,
-                                            value: value._id,
-                                            index: value_index,
-                                            amount: amount,
-                                            availables: availables
-                                    });
-                                    return Catalog.update(
-                                        { _id: catalog._id },
-                                        { 
-                                            $push: {'filter': {
-                                                    property: property._id,
-                                                    value: value._id,
-                                                    index: value_index,
-                                                    amount: amount,
-                                                    availables: availables
-                                            } }
-                                        }
-                                    );                                    
-                                }
+                    var filterUpdate = Catalog.findOne(
+                        {_id: catalog._id, 'filter.index': value_index}, 
+                        {'filter.$': 1}
+                    ).exec().
+                    then(function(catalogExist){
+                        var updateCatalog;
+                        var countProductAmount = Product.count({'properties.values.index': value_index}).exec();
+
+                        if (catalogExist !== null) {
+                            return countProductAmount.then(function(amount) {
+                                return Catalog.update(
+                                    { _id: catalog._id, 'filter.index': value_index },
+                                    { 
+                                        $set: { 'filter.$.amount': amount },
+                                        $push: {'filter.$.availables': {$each: availables} }
+                                    }
+                                );
                             });
-                        }).
-                        catch(function(error){
-                            console.log(error);
-                        })
-                    );                    
+                        } 
+                        
+                        if (catalogExist === null) {
+                            return countProductAmount.then(function(amount) {
+                                return Catalog.update(
+                                    { _id: catalog._id },
+                                    { 
+                                        $push: {'filter': {
+                                                property: property._id,
+                                                value: value._id,
+                                                index: value_index,
+                                                amount: amount,
+                                                availables: availables
+                                        } }
+                                    }
+                                );
+                            });                                  
+                        }
+                    });
+
+                    filterUpdates.push(filterUpdate);                    
                 });
             }
         });
 
         return Promise.all(filterUpdates);
+    }).
+    then(function() {
+        return Catalog.findOne({_id: catalog.parentId}).exec();
+    }).
+    then(function(parent) {
+        if (!parent)
+            return Promise.resolve();
+
+        return parent.buildFilter(product);
     });
 }
 
