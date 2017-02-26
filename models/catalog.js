@@ -135,7 +135,7 @@ catalogSchema.post('save', function (catalog) {
         old_full_path = catalog.full_path;
         catalog.full_path = parent.full_path + catalog.code + '/';            
 
-       return Promise.resolve();
+        return Promise.resolve();
     }).
     then(function() {
         return catalog.getChildren();
@@ -147,7 +147,7 @@ catalogSchema.post('save', function (catalog) {
 
         if (catalog.full_path != old_full_path) {
             catalog.childs = childs;
-            console.log('by parent', catalog.full_path, old_full_path);
+            // console.log('by parent', catalog.full_path, old_full_path);
             promises.push(catalog.save());
         }
         
@@ -156,7 +156,7 @@ catalogSchema.post('save', function (catalog) {
             child.full_path = catalog.full_path + child.code + '/';
 
             if (child.full_path != old_full_path) {
-                console.log('by childs', child.full_path, old_full_path);
+                // console.log('by childs', child.full_path, old_full_path);
                 promises.push(child.save());
             }
         });
