@@ -74,7 +74,7 @@ catalogSchema.methods.buildFilter = function(product) {
                                     { _id: catalog._id, 'filter.index': value_index },
                                     { 
                                         $set: { 'filter.$.amount': amount },
-                                        $push: {'filter.$.availables': {$each: availables} }
+                                        $addToSet: {'filter.$.availables': {$each: availables} }
                                     }
                                 );
                             });
