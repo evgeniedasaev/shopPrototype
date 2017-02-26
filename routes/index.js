@@ -54,13 +54,30 @@ router.get(/^\/catalog\/.*?$/, function(req, res, next) {
   };
 
   // ищем раздел каталога
-  Catalog.findOne({full_path: req.originalUrl}).populate('childs').exec()
+  Catalog.findOne({full_path: req.originalUrl}).
+  populate('childs').
+  populate({
+    path: 'filter.property',
+    model: 'Property'
+  }).populate({
+    path: 'filter.value',
+    model: 'PropertyValue'
+  }).  
+  exec()
   
   // подбираем товары для данного раздела  
   .then(function(catalog) {
     if (catalog) {
       // передаем информацию о текущем разделе каталога
-      locals.catalog_active = catalog;
+      locals.catalog_active = catalog;      
+      locals.filters = catalog.filter.reduce(function ( total, current ) {
+            if (typeof total[ current.property._id ] === 'undefined')
+                total[ current.property._id ] = [];
+
+            total[ current.property._id ].push(current);
+
+            return total;
+        }, {});
 
       return Product.find({catalog: catalog._id}).limit(25).exec();
     } else {

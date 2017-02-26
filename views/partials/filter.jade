@@ -1,0 +1,7 @@
+ul
+    each filter_group in filters
+        li 
+        | #{filter_group[0].property.name}
+        ul
+            each filter in filter_group
+                li #{filter.value.name} (#{filter.amount})
