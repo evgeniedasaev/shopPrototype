@@ -126,28 +126,43 @@ catalogSchema.pre('save', function (next) {
 });
 
 catalogSchema.post('save', function (catalog) {
-    catalog.getParent(function(error, parent) {
-        if (parent) {
-            catalog.full_path = parent.full_path + catalog.code + '/';
-            // console.log('by parent ', catalog.full_path);
-            if (catalog.modified) {
-                catalog.save();
-            }        
-        }
-    });
+    var old_full_path;
     
-    catalog.getChildren(function(err, childs){
-        if (childs) {                
-            childs.forEach(function(child) {
-                child.full_path = catalog.full_path + child.code + '/';
-                // console.log('by childs ', child.full_path);
-                child.childs = childs;
-                if (child.modified) {
-                    child.save();
-                }
-            });
+    return catalog.getParent().
+    then(function(parent) {
+        if (!parent) return Promise.resolve();
+
+        old_full_path = catalog.full_path;
+        catalog.full_path = parent.full_path + catalog.code + '/';            
+
+       return Promise.resolve();
+    }).
+    then(function() {
+        return catalog.getChildren();
+    }).
+    then(function(childs) {
+        if (!childs) return Promise.resolve();
+
+        var promises = [];
+
+        if (catalog.full_path != old_full_path) {
+            catalog.childs = childs;
+            console.log('by parent', catalog.full_path, old_full_path);
+            promises.push(catalog.save());
         }
-    }); 
+        
+        childs.forEach(function(child) {
+            var old_full_path = child.full_path;
+            child.full_path = catalog.full_path + child.code + '/';
+
+            if (child.full_path != old_full_path) {
+                console.log('by childs', child.full_path, old_full_path);
+                promises.push(child.save());
+            }
+        });
+
+        return Promise.all(promises);
+    });
 });
 
 var Catalog = mongoose.model('Catalog', catalogSchema);

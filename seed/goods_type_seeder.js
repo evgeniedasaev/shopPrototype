@@ -5,7 +5,7 @@ require('./seeder')(
                 goods_types.permalink
     FROM        goods_types
     GROUP BY 	goods_types.id
-    ORDER BY    parent_id ASC;`, 
+    ORDER BY    nesting ASC, parent_id ASC;`, 
     function(exportItem, success) {
         var Catalog = require('../models/catalog');
 
