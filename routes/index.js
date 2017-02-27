@@ -53,8 +53,10 @@ router.get(/^\/catalog\/.*?$/, function(req, res, next) {
     successMsg: successMsg
   };
 
+  locals.selected_filter = ('filter' in req.query) ? req.query.filter : [];
+
   // ищем раздел каталога
-  Catalog.findOne({full_path: req.originalUrl}).
+  Catalog.findOne({full_path: req._parsedUrl.pathname}).
   populate('childs').
   populate({
     path: 'filter.property',
@@ -71,15 +73,27 @@ router.get(/^\/catalog\/.*?$/, function(req, res, next) {
       // передаем информацию о текущем разделе каталога
       locals.catalog_active = catalog;      
       locals.filters = catalog.filter.reduce(function ( total, current ) {
-            if (typeof total[ current.property._id ] === 'undefined')
-                total[ current.property._id ] = [];
+        if (typeof total[ current.property._id ] === 'undefined')
+            total[ current.property._id ] = [];
 
-            total[ current.property._id ].push(current);
+        total[ current.property._id ].push(current);
 
-            return total;
-        }, {});
+        return total;
+      }, {});
 
-      return Product.find({catalog: catalog._id}).limit(25).exec();
+      var selected_indexed = [];
+      Object.keys(locals.selected_filter).forEach(function(property) {
+        locals.selected_filter[property].forEach(function(value) {
+          selected_indexed.push(property + '#' + value);
+        });
+      });
+
+      var products = Product.find({catalog: catalog._id});
+      if (selected_indexed.length) {
+        products.where('properties.values.index').in(selected_indexed);
+      }
+
+      return products.limit(25).exec();
     } else {
       throw new Error('Раздел каталога не существует');
     }
@@ -87,17 +101,17 @@ router.get(/^\/catalog\/.*?$/, function(req, res, next) {
 
   // организуем вывод товаров по три в ряд
   .then(function(list) {
-        var chunks = [];
-        var chunkSize = 3;
+    var chunks = [];
+    var chunkSize = 3;
 
-        if (list) {
-          for (var i = 0; i < list.length; i+=chunkSize) {
-            chunks.push(list.slice(i, i + chunkSize));
-          }
-        }
+    if (list) {
+      for (var i = 0; i < list.length; i+=chunkSize) {
+        chunks.push(list.slice(i, i + chunkSize));
+      }
+    }
 
-        locals.product_chunks = chunks;
-        locals.withProducts = list.length;
+    locals.product_chunks = chunks;
+    locals.withProducts = list.length;
   })
 
   // формируем навигацию по каталогу
