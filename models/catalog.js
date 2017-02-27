@@ -66,7 +66,25 @@ catalogSchema.methods.buildFilter = function(product) {
                     ).exec().
                     then(function(catalogExist){
                         var updateCatalog;
-                        var countProductAmount = Product.count({'properties.values.index': value_index}).exec();
+                        var countProductAmount = Product.count({
+                            catalog: catalog, 
+                            'properties.values.index': value_index
+                        }).exec().
+                        then(function(amount) {
+                            if (!catalog.childs) return Promise.resolve(amount);
+
+                            return Catalog.findOne({_id: catalog._id}).populate('childs').
+                            then(function(catalog_with_childs) {
+                                catalog_with_childs.childs.forEach(function(child) {
+                                    child.filter.forEach(function(value) {
+                                        if (value.index == value_index) 
+                                            amount += value.amount;
+                                    });
+                                });
+
+                                return Promise.resolve(amount);
+                            });
+                        });
 
                         if (catalogExist !== null) {
                             return countProductAmount.then(function(amount) {

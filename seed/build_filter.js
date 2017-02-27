@@ -7,7 +7,7 @@ mongoose.Promise = Promise;
 var Product = require('../models/product');
 var Catalog = require('../models/catalog');
 
-Product.find({}).populate('catalog').exec().
+Product.find({}).populate('catalog').sort({'catalog': 'asc'}).exec().
 then(function(products) {
     return Promise.reduce(products, function(updated, product) {
         if (typeof product.catalog === "undefined") {
