@@ -81,19 +81,16 @@ router.get(/^\/catalog\/.*?$/, function(req, res, next) {
         return total;
       }, {});
 
-      var selected_indexed = [];
+      var products_query = {catalog: catalog._id};
+
+      products_query.$and = [];
       Object.keys(locals.selected_filter).forEach(function(property) {
         locals.selected_filter[property].forEach(function(value) {
-          selected_indexed.push(property + '#' + value);
+          products_query.$and.push({'properties.values.index' : property + '#' + value});
         });
       });
 
-      var products = Product.find({catalog: catalog._id});
-      if (selected_indexed.length) {
-        products.where('properties.values.index').in(selected_indexed);
-      }
-
-      return products.limit(25).exec();
+      return Product.find(products_query).limit(25).exec();
     } else {
       throw new Error('Раздел каталога не существует');
     }
