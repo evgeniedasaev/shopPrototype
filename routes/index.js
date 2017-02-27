@@ -81,14 +81,34 @@ router.get(/^\/catalog\/.*?$/, function(req, res, next) {
         return total;
       }, {});
 
-      var products_query = {catalog: catalog._id};
+      var products_query = {catalog: {$in: [catalog._id]}};
+      if (catalog.childs) {
+        function merge_childs(childs, ids) {
+          childs.forEach(function(child) {
+            if (typeof child._id === 'undefined')
+              ids.push(child);
+            else
+              ids.push(child._id);
 
-      products_query.$and = [];
+            if (child.childs)
+              ids = merge_childs(child.childs, ids);
+          });
+
+          return ids;
+        }
+
+        products_query.catalog.$in = merge_childs(catalog.childs, products_query.catalog.$in);
+      }
+
+      var property_filter = [];
       Object.keys(locals.selected_filter).forEach(function(property) {
         locals.selected_filter[property].forEach(function(value) {
-          products_query.$and.push({'properties.values.index' : property + '#' + value});
+          property_filter.push({'properties.values.index' : property + '#' + value});
         });
       });
+      if (property_filter.length) {
+        products_query.$and = property_filter;
+      }
 
       return Product.find(products_query).limit(25).exec();
     } else {
