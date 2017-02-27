@@ -1,7 +1,20 @@
-ul
-    each filter_group in filters
-        li 
-        | #{filter_group[0].property.name}
-        ul
+form
+    ul.list-group.table-of-contents
+        each filter_group in filters
+            li.list-group-item
+                strong #{filter_group[0].property.name}
             each filter in filter_group
-                li #{filter.value.name} (#{filter.amount})
+                - var propertyCode = filter.property.code
+                - var selected = []
+                - if (selected_filter && propertyCode in selected_filter)
+                    - selected = selected_filter[propertyCode] 
+                li.list-group-item
+                    label
+                        input(
+                            type="checkbox", 
+                            name="filter[#{propertyCode}][]", 
+                            value="#{filter.value.code}",
+                            checked=((selected.indexOf(filter.value.code) >= 0) ? "checked" : false)
+                        )
+                        |  #{filter.value.name} (#{filter.amount})
+    button.btn.btn-default(type="submit") Найти
